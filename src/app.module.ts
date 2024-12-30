@@ -6,10 +6,12 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD, APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { CoreModule } from './core/core.module';
+import { SecurityModule } from './core/security/security.module';
+import { SecurityService } from './core/security/security.service';
 import mongodbConfig from './config/mongodb.config';
 import securityConfig from './config/security.config';
 import appConfig from './config/app.config';
-import { SecurityMiddleware } from './core/middleware/security.middleware';
 import { CustomThrottlerGuard } from './core/guards/throttler.guard';
 import { AllExceptionsFilter } from './core/filters/all-exceptions.filter';
 import { TimeoutInterceptor } from './core/interceptors/timeout.interceptor';
@@ -21,6 +23,8 @@ import { LoggingInterceptor } from './core/interceptors/logging.interceptor';
       isGlobal: true,
       load: [mongodbConfig, securityConfig, appConfig],
     }),
+    SecurityModule,
+    CoreModule,
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -73,7 +77,11 @@ import { LoggingInterceptor } from './core/interceptors/logging.interceptor';
   ],
 })
 export class AppModule implements NestModule {
+  constructor(private readonly securityService: SecurityService) {}
+
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(SecurityMiddleware).forRoutes('*');
+    consumer
+      .apply((req, res, next) => this.securityService.handle(req, res, next))
+      .forRoutes('*');
   }
 }

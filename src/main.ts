@@ -3,12 +3,15 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
-import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
+
+  // Cookie parser - security middleware'den önce olmalı
+  app.use(cookieParser());
 
   // Global prefix
   const apiPrefix = configService.get<string>('app.apiPrefix', 'api');
@@ -23,17 +26,8 @@ async function bootstrap() {
     }),
   );
 
-  // Security
-  app.use(helmet());
-
-  // CORS
-  const environment = configService.get<string>('app.env', 'development');
-  if (environment !== 'production') {
-    app.enableCors();
-  }
-
   // Swagger Setup
-  if (environment !== 'production') {
+  if (configService.get<string>('app.env') !== 'production') {
     const config = new DocumentBuilder()
       .setTitle(configService.get<string>('app.name', 'NestJS API'))
       .setDescription('API Documentation')

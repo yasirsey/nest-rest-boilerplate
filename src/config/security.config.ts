@@ -3,7 +3,11 @@ import { registerAs } from '@nestjs/config';
 
 export default registerAs('security', () => ({
   // JWT Configuration
-  jwtSecret: process.env.JWT_SECRET || 'super-secret',
+  jwtSecret: process.env.JWT_SECRET || 'your-jwt-secret',
+  refreshTokenSecret:
+    process.env.REFRESH_TOKEN_SECRET || 'your-refresh-token-secret',
+  accessTokenExpiration: process.env.ACCESS_TOKEN_EXPIRATION || '15m',
+  refreshTokenExpiration: process.env.REFRESH_TOKEN_EXPIRATION || '7d',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '1h',
 
   // Password Hashing
@@ -28,9 +32,20 @@ export default registerAs('security', () => ({
   // Security Headers
   cors: {
     enabled: process.env.CORS_ENABLED === 'true',
-    origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000'],
+    origin: process.env.CORS_ALLOWED_ORIGINS?.split(',') || [
+      'http://localhost:3000',
+    ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true,
+  },
+  csrf: {
+    publicPaths: [
+      '/api/auth/login',
+      '/api/auth/register',
+      '/health',
+      '/metrics',
+    ],
+    secret: process.env.CSRF_SECRET || 'your-csrf-secret',
   },
 
   // IP Whitelist
