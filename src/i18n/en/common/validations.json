@@ -1,0 +1,10 @@
+{
+  "FIELD": {
+    "REQUIRED": "{property} is required",
+    "STRING": "{property} must be a string",
+    "EMAIL": "Please enter a valid email address",
+    "MIN_LENGTH": "{property} must be at least {constraints.0} characters",
+    "MAX_LENGTH": "{property} must be at most {constraints.0} characters",
+    "ENUM": "Invalid value for {property}"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "PASSWORD": {
+    "MIN_LENGTH": "Şifre en az {constraints.0} karakter olmalıdır",
+    "MAX_LENGTH": "Şifre en fazla {constraints.0} karakter olmalıdır",
+    "INVALID": "Şifre geçersiz formatta"
+  },
+  "EMAIL": {
+    "INVALID": "Geçerli bir e-posta adresi giriniz",
+    "EXISTS": "Bu e-posta adresi zaten kullanımda"
+  },
+  "ROLE": {
+    "INVALID": "Geçersiz rol. 'user' veya 'admin' olmalıdır"
+  }
+}

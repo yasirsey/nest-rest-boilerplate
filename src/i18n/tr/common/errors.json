@@ -1,0 +1,7 @@
+{
+  "NOT_FOUND": "{{resource}} bulunamadı",
+  "ALREADY_EXISTS": "{{resource}} zaten mevcut",
+  "UNAUTHORIZED": "Bu işlem için yetkiniz yok",
+  "FORBIDDEN": "Bu işleme erişiminiz engellendi",
+  "INTERNAL_ERROR": "Sunucu hatası oluştu"
+}

@@ -1,0 +1,13 @@
+{
+  "PASSWORD": {
+    "MIN_LENGTH": "Password must be at least {constraints.0} characters",
+    "INVALID": "Password format is invalid"
+  },
+  "EMAIL": {
+    "INVALID": "Please enter a valid email address",
+    "EXISTS": "This email is already in use"
+  },
+  "ROLE": {
+    "INVALID": "Invalid role. Must be either 'user' or 'admin'"
+  }
+}

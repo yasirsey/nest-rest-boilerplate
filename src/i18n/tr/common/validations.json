@@ -1,0 +1,10 @@
+{
+  "FIELD": {
+    "REQUIRED": "{property} alanı zorunludur",
+    "STRING": "{property} bir metin olmalıdır",
+    "EMAIL": "Geçerli bir e-posta adresi giriniz",
+    "MIN_LENGTH": "{property} en az {constraints.0} karakter olmalıdır",
+    "MAX_LENGTH": "{property} en fazla {constraints.0} karakter olmalıdır",
+    "ENUM": "{property} için geçersiz değer"
+  }
+}
