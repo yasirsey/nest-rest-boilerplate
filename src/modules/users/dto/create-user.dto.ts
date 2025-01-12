@@ -10,6 +10,7 @@ import {
   MaxLength,
 } from 'class-validator';
 import { i18nValidationMessage } from 'nestjs-i18n';
+import { Role } from 'src/modules/auth/enums/role.enum';
 
 export class CreateUserDto {
   @ApiProperty({ description: 'Email address of the user' })
@@ -61,10 +62,10 @@ export class CreateUserDto {
   })
   lastName: string;
 
-  @ApiProperty({ enum: ['user', 'admin'], required: false, default: 'user' })
-  @IsEnum(['user', 'admin'], {
+  @ApiProperty({ enum: Role, required: false })
+  @IsEnum(Role, {
     message: i18nValidationMessage('modules.users.validations.ROLE.INVALID'),
   })
   @IsOptional()
-  role?: string;
+  role?: Role;
 }

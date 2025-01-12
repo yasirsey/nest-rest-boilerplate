@@ -11,10 +11,17 @@ import {
 } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { I18n, I18nContext } from 'nestjs-i18n';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { User } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UsersService } from './users.service';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from '../auth/enums/role.enum';
 
 @ApiTags('users')
 @Controller('users')
@@ -40,6 +47,7 @@ export class UsersController {
   }
 
   @Get()
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -55,6 +63,8 @@ export class UsersController {
   }
 
   @Get(':id')
+  @ApiBearerAuth()
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get a user by id' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -74,6 +84,8 @@ export class UsersController {
   }
 
   @Patch(':id')
+  @Roles(Role.ADMIN)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Update a user' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -93,6 +105,8 @@ export class UsersController {
   }
 
   @Delete(':id')
+  @Roles(Role.ADMIN)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a user' })
   @ApiResponse({
     status: HttpStatus.NO_CONTENT,

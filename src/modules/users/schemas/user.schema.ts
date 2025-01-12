@@ -2,6 +2,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
+import { Role } from 'src/modules/auth/enums/role.enum';
 
 export type UserDocument = User & Document;
 
@@ -22,8 +23,8 @@ export class User {
   @Prop({ required: true })
   lastName: string;
 
-  @ApiProperty({ enum: ['user', 'admin'] })
-  @Prop({ enum: ['user', 'admin'], default: 'user' })
+  @ApiProperty({ enum: Role })
+  @Prop({ enum: Role, default: Role.USER })
   role: string;
 
   @ApiProperty()

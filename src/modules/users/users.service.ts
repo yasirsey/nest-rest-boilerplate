@@ -28,7 +28,7 @@ export class UsersService {
     const existingUser = await this.userModel.findOne({ email });
     if (existingUser) {
       throw new ConflictException(
-        await this.i18n.translate('modules.users.messages.EMAIL.EXISTS', {
+        await this.i18n.translate('modules.users.validations.EMAIL.EXISTS', {
           lang,
         }),
       );

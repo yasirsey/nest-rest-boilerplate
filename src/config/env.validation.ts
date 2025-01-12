@@ -16,6 +16,14 @@ export class EnvironmentVariables {
   @IsEnum(['development', 'production', 'test'])
   @IsNotEmpty()
   NODE_ENV: string;
+
+  @IsString()
+  @IsNotEmpty()
+  JWT_SECRET: string;
+
+  @IsString()
+  @IsNotEmpty()
+  JWT_EXPIRES_IN: string;
 }
 
 export function validate(config: Record<string, unknown>) {

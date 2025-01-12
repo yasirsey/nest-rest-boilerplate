@@ -2,6 +2,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsString, MinLength, IsEnum } from 'class-validator';
 import { i18nValidationMessage } from 'nestjs-i18n';
+import { Role } from 'src/modules/auth/enums/role.enum';
 
 export class UpdateUserDto {
   @ApiPropertyOptional({ description: 'First name of the user' })
@@ -33,10 +34,10 @@ export class UpdateUserDto {
   @IsOptional()
   password?: string;
 
-  @ApiPropertyOptional({ enum: ['user', 'admin'] })
-  @IsEnum(['user', 'admin'], {
+  @ApiPropertyOptional({ enum: Role })
+  @IsEnum(Role, {
     message: i18nValidationMessage('modules.users.validations.ROLE.INVALID'),
   })
   @IsOptional()
-  role?: string;
+  role?: Role;
 }
