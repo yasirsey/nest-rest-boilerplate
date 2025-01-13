@@ -5,7 +5,7 @@ import {
   ConflictException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { User } from './schemas/user.schema';
+import { User, UserDocument } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRepository } from './repositories/user.repository';
@@ -81,7 +81,10 @@ export class UsersService {
     return user;
   }
 
-  async validateUserCredentials(email: string, password: string): Promise<any> {
+  async validateUserCredentials(
+    email: string,
+    password: string,
+  ): Promise<UserDocument> {
     const user = await this.userRepository.findByEmail(email);
     if (!user || !(await bcrypt.compare(password, user.password))) {
       throw new UnauthorizedException(

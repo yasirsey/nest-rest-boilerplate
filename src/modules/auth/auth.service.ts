@@ -19,14 +19,13 @@ export class AuthService {
       loginDto.password,
     );
 
-    const payload = { email: user.email, sub: user._id, role: user.role };
-    const access_token = this.jwtService.sign(payload);
+    const payload = {
+      email: user.email,
+      sub: user._id.toString(),
+      role: user.role,
+    };
 
-    this.logger.log(
-      `User logged in successfully: ${user.email}`,
-      'AuthService',
-      { userId: user._id },
-    );
+    const access_token = this.jwtService.sign(payload);
 
     return {
       data: {

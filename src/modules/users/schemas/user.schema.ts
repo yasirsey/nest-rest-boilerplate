@@ -1,6 +1,6 @@
 // src/modules/users/schemas/user.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { Role } from 'src/modules/auth/enums/role.enum';
 
@@ -8,6 +8,8 @@ export type UserDocument = User & Document;
 
 @Schema({ timestamps: true })
 export class User {
+  _id: Types.ObjectId;
+
   @ApiProperty()
   @Prop({ required: true, unique: true })
   email: string;
@@ -25,7 +27,7 @@ export class User {
 
   @ApiProperty({ enum: Role })
   @Prop({ enum: Role, default: Role.USER })
-  role: string;
+  role: Role;
 
   @ApiProperty()
   @Prop({ default: true })
