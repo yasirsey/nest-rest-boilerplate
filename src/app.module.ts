@@ -15,7 +15,7 @@ import { SecurityModule } from './config/security.module';
 import rateLimitConfig from './config/rate-limit.config';
 import corsConfig from './config/cors.config';
 import { databaseConfig } from './config/database.config';
-import { DatabaseModule } from './database/database.module';
+import { DatabaseModule } from './core/database/database.module';
 
 @Module({
   imports: [

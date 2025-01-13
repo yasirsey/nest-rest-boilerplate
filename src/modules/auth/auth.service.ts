@@ -6,20 +6,20 @@ import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
-import { ConfigService } from '@nestjs/config';
 import { UserDocument } from '../users/schemas/user.schema';
 import { LoggerService } from 'src/core/services/logger.service';
 import { TokenBlacklistService } from './services/token-blacklist.service';
 import { BaseApiResponse } from 'src/core/interfaces/base-api-response.interface';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
     private readonly logger: LoggerService,
     private readonly tokenBlacklistService: TokenBlacklistService,
+    private readonly i18n: I18nService,
   ) {}
 
   async login(loginDto: LoginDto) {
@@ -44,7 +44,7 @@ export class AuthService {
         user,
         ...tokens,
       },
-      message: 'Login successful',
+      message: await this.i18n.translate('modules.auth.messages.LOGIN_SUCCESS'),
     };
   }
 
