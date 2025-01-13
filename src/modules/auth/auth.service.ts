@@ -9,6 +9,7 @@ import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { ConfigService } from '@nestjs/config';
 import { UserDocument } from '../users/schemas/user.schema';
 import { LoggerService } from 'src/core/services/logger.service';
+import { TokenBlacklistService } from './services/token-blacklist.service';
 import { BaseApiResponse } from 'src/core/interfaces/base-api-response.interface';
 
 @Injectable()
@@ -18,6 +19,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly logger: LoggerService,
+    private readonly tokenBlacklistService: TokenBlacklistService,
   ) {}
 
   async login(loginDto: LoginDto) {
@@ -84,14 +86,29 @@ export class AuthService {
 
   async logout(
     userId: string,
+    accessToken: string,
     refreshToken: string,
   ): Promise<BaseApiResponse<void>> {
-    await this.usersService.removeRefreshToken(userId, refreshToken);
+    try {
+      await Promise.all([
+        this.tokenBlacklistService.blacklistToken(accessToken),
+        this.usersService.removeRefreshToken(userId, refreshToken),
+      ]);
 
-    return {
-      data: null,
-      message: 'Logged out successfully',
-    };
+      this.logger.log('User logged out successfully', 'AuthService', {
+        userId,
+      });
+
+      return {
+        data: null,
+        message: 'Logged out successfully',
+      };
+    } catch (error) {
+      this.logger.error('Logout operation failed', error.stack, 'AuthService', {
+        userId,
+      });
+      throw error;
+    }
   }
 
   private generateSecureToken(): string {

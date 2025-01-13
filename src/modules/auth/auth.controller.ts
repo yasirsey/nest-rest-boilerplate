@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Request,
   UseGuards,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { I18nService } from 'nestjs-i18n';
@@ -58,7 +59,13 @@ export class AuthController {
     @Request() req,
     @Body() { refresh_token }: RefreshTokenDto,
   ): Promise<BaseApiResponse<void>> {
-    return this.authService.logout(req.user._id, refresh_token);
+    const accessToken = req.headers.authorization?.split(' ')[1];
+
+    if (!accessToken) {
+      throw new UnauthorizedException('Access token is required');
+    }
+
+    return this.authService.logout(req.user._id, accessToken, refresh_token);
   }
 
   @Post('password-reset-request')
