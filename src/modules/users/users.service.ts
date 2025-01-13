@@ -124,4 +124,40 @@ export class UsersService {
 
     this.logger.log(`User deleted: ${id}`, 'UsersService');
   }
+
+  async findByRefreshToken(refreshToken: string): Promise<UserDocument | null> {
+    return this.userRepository.findOne({
+      'refreshTokens.token': refreshToken,
+    });
+  }
+
+  async addRefreshToken(
+    userId: string,
+    refreshToken: { token: string; expires: Date },
+  ): Promise<void> {
+    await this.userRepository.updateOne(
+      { _id: userId },
+      { $push: { refreshTokens: refreshToken } },
+    );
+  }
+
+  async removeRefreshToken(userId: string, token: string): Promise<void> {
+    await this.userRepository.updateOne(
+      { _id: userId },
+      { $pull: { refreshTokens: { token } } },
+    );
+  }
+
+  async rotateRefreshToken(
+    userId: string,
+    oldToken: string,
+    newToken: { token: string; expires: Date },
+  ): Promise<void> {
+    await this.userRepository.updateOne(
+      { _id: userId, 'refreshTokens.token': oldToken },
+      {
+        $set: { 'refreshTokens.$': newToken },
+      },
+    );
+  }
 }

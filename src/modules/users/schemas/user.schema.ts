@@ -17,6 +17,9 @@ export class User {
   @Prop({ required: true })
   password: string;
 
+  @Prop({ type: [{ token: String, expires: Date }] })
+  refreshTokens: { token: string; expires: Date }[];
+
   @ApiProperty()
   @Prop({ required: true })
   firstName: string;

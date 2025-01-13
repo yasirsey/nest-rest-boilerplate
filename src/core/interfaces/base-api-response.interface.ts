@@ -1,6 +1,6 @@
 // src/core/interfaces/api-response.interface.ts
 export interface BaseApiResponse<T> {
-  data: T;
+  data: T extends void ? null : T;
   message?: string;
 }
 
