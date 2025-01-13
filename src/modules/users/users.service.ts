@@ -23,36 +23,44 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto, lang: string): Promise<User> {
-    const { email, password } = createUserDto;
-
-    const existingUser = await this.userModel.findOne({ email });
-    if (existingUser) {
-      throw new ConflictException(
-        await this.i18n.translate('modules.users.validations.EMAIL.EXISTS', {
-          lang,
-        }),
-      );
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const { email } = createUserDto;
 
     try {
+      const existingUser = await this.userModel.findOne({ email });
+      if (existingUser) {
+        this.logger.warn(
+          `User creation failed: Email already exists: ${email}`,
+          'UsersService',
+        );
+        throw new ConflictException(
+          await this.i18n.translate('modules.users.messages.EMAIL.EXISTS', {
+            lang,
+          }),
+        );
+      }
+
+      const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
       const createdUser = new this.userModel({
         ...createUserDto,
         password: hashedPassword,
       });
+
       const user = await createdUser.save();
-      this.logger.log(`User created: ${user.email}`, 'UsersService');
+      this.logger.log(
+        `User created successfully: ${user.email}`,
+        'UsersService',
+        { userId: user._id },
+      );
+
       return user;
     } catch (error) {
       this.logger.error(
-        `Error creating user: ${error.message}`,
+        `Failed to create user: ${error.message}`,
         error.stack,
         'UsersService',
+        { email },
       );
-      throw new InternalServerErrorException(
-        await this.i18n.translate('common.errors.INTERNAL_ERROR', { lang }),
-      );
+      throw error;
     }
   }
 

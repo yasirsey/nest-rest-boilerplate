@@ -1,46 +1,112 @@
 // src/core/services/logger.service.ts
-import { Injectable, LoggerService as NestLoggerService } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import * as winston from 'winston';
+import * as DailyRotateFile from 'winston-daily-rotate-file';
+import { Request } from 'express';
 
 @Injectable()
-export class LoggerService implements NestLoggerService {
-  private getTimestamp(): string {
-    return new Date().toISOString();
-  }
+export class LoggerService {
+  private logger: winston.Logger;
 
-  private formatMessage(message: any, context?: string): string {
-    return `[${context || 'Application'}] ${message}`;
-  }
-
-  log(message: any, context?: string): void {
-    console.log(
-      `${this.getTimestamp()} [INFO] ${this.formatMessage(message, context)}`,
+  constructor() {
+    // Winston formatı
+    const logFormat = winston.format.combine(
+      winston.format.timestamp(),
+      winston.format.ms(),
+      winston.format.json(),
     );
+
+    // Transport tanımlamaları
+    const transports: winston.transport[] = [
+      // Konsol transport
+      new winston.transports.Console({
+        format: winston.format.combine(
+          winston.format.colorize(),
+          winston.format.simple(),
+        ),
+      }),
+      // Günlük dosya rotasyonu (error seviyesi için)
+      new DailyRotateFile({
+        filename: 'logs/error-%DATE%.log',
+        datePattern: 'YYYY-MM-DD',
+        zippedArchive: true,
+        maxSize: '20m',
+        maxFiles: '14d',
+        level: 'error',
+      }),
+      // Tüm loglar için dosya rotasyonu
+      new DailyRotateFile({
+        filename: 'logs/combined-%DATE%.log',
+        datePattern: 'YYYY-MM-DD',
+        zippedArchive: true,
+        maxSize: '20m',
+        maxFiles: '14d',
+      }),
+    ];
+
+    this.logger = winston.createLogger({
+      format: logFormat,
+      transports,
+    });
   }
 
-  error(message: any, trace?: string, context?: string): void {
-    console.error(
-      `${this.getTimestamp()} [ERROR] ${this.formatMessage(message, context)}`,
-    );
-    if (trace) {
-      console.error(trace);
-    }
+  // Hassas verileri maskeleme
+  private maskSensitiveData(data: any): any {
+    if (!data) return data;
+
+    const maskedFields = ['password', 'token', 'authorization', 'cookie'];
+    const masked = { ...data };
+
+    Object.keys(masked).forEach((key) => {
+      if (maskedFields.includes(key.toLowerCase())) {
+        masked[key] = '***MASKED***';
+      } else if (typeof masked[key] === 'object') {
+        masked[key] = this.maskSensitiveData(masked[key]);
+      }
+    });
+
+    return masked;
   }
 
-  warn(message: any, context?: string): void {
-    console.warn(
-      `${this.getTimestamp()} [WARN] ${this.formatMessage(message, context)}`,
-    );
+  // Request bilgilerini formatlama
+  private formatRequestDetails(request: Request): any {
+    return {
+      requestId: request['id'],
+      method: request.method,
+      url: request.url,
+      ip: request.ip,
+      userId: request['user']?.id || 'anonymous',
+      userAgent: request.get('user-agent'),
+      headers: this.maskSensitiveData(request.headers),
+      body: this.maskSensitiveData(request.body),
+    };
   }
 
-  debug(message: any, context?: string): void {
-    console.debug(
-      `${this.getTimestamp()} [DEBUG] ${this.formatMessage(message, context)}`,
-    );
+  // Log metodları
+  log(message: string, context?: string, meta?: any) {
+    this.logger.info(message, { context, meta });
   }
 
-  verbose(message: any, context?: string): void {
-    console.log(
-      `${this.getTimestamp()} [VERBOSE] ${this.formatMessage(message, context)}`,
-    );
+  error(message: string, trace?: string, context?: string, meta?: any) {
+    this.logger.error(message, { trace, context, meta });
+  }
+
+  warn(message: string, context?: string, meta?: any) {
+    this.logger.warn(message, { context, meta });
+  }
+
+  debug(message: string, context?: string, meta?: any) {
+    this.logger.debug(message, { context, meta });
+  }
+
+  // HTTP Request logging
+  logRequest(request: Request, responseTime?: number, statusCode?: number) {
+    const requestDetails = this.formatRequestDetails(request);
+
+    this.logger.info('HTTP Request', {
+      ...requestDetails,
+      responseTime,
+      statusCode,
+    });
   }
 }

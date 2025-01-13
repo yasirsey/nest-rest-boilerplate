@@ -8,8 +8,10 @@ import { validate } from './config/env.validation';
 import { CoreModule } from './core/core.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
+import { LoggerService } from './core/services/logger.service';
+import { RequestLoggerInterceptor } from './core/interceptors/request-logger.interceptor';
 
 @Module({
   imports: [
@@ -32,6 +34,11 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
     AuthModule,
   ],
   providers: [
+    LoggerService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: RequestLoggerInterceptor,
+    },
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
