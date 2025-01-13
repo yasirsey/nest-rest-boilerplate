@@ -1,11 +1,11 @@
 // src/modules/auth/auth.service.ts
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import * as crypto from 'crypto';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { ConfigService } from '@nestjs/config';
-import { v4 as uuidv4 } from 'uuid';
 import { UserDocument } from '../users/schemas/user.schema';
 import { LoggerService } from 'src/core/services/logger.service';
 import { BaseApiResponse } from 'src/core/interfaces/base-api-response.interface';
@@ -93,6 +93,10 @@ export class AuthService {
     };
   }
 
+  private generateSecureToken(): string {
+    return crypto.randomBytes(40).toString('hex');
+  }
+
   private async generateTokens(user: UserDocument) {
     const payload = {
       email: user.email,
@@ -102,7 +106,7 @@ export class AuthService {
 
     const [access_token, refresh_token] = await Promise.all([
       this.jwtService.signAsync(payload),
-      uuidv4(), // UUID kullanarak güvenli refresh token oluştur
+      this.generateSecureToken(),
     ]);
 
     return {
