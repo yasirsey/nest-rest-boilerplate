@@ -12,13 +12,18 @@ import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { LoggerService } from './core/services/logger.service';
 import { RequestLoggerInterceptor } from './core/interceptors/request-logger.interceptor';
+import { SecurityModule } from './config/security.module';
+import rateLimitConfig from './config/rate-limit.config';
+import corsConfig from './config/cors.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       validate,
+      load: [rateLimitConfig, corsConfig],
     }),
+    SecurityModule,
     I18nModule.forRoot({
       fallbackLanguage: 'tr',
       loaderOptions: {

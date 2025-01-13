@@ -3,11 +3,20 @@ import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { LoggerService } from './core/services/logger.service';
 import { I18nValidationExceptionFilter, I18nValidationPipe } from 'nestjs-i18n';
-import { INestApplication, VersioningType } from '@nestjs/common';
+import { VersioningType } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-  const app: INestApplication = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const logger = app.get(LoggerService);
+  const configService = app.get<ConfigService>(ConfigService);
+
+  // Express specific trust proxy setup
+  app.set('trust proxy', 'loopback');
+
+  // CORS setup from config
+  app.enableCors(configService.get('cors'));
 
   app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
   app.setGlobalPrefix('api');
