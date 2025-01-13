@@ -8,9 +8,10 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { I18n, I18nContext } from 'nestjs-i18n';
+import { I18nService } from 'nestjs-i18n';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -22,13 +23,24 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UsersService } from './users.service';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/enums/role.enum';
+import { Language } from 'src/core/decorators/language.decorator';
+import {
+  BaseApiResponse,
+  PaginatedResult,
+} from 'src/core/interfaces/base-api-response.interface';
+import { PaginationDto } from 'src/core/dto/pagination.dto';
+import { Public } from '../auth/decorators/public.decorator';
 
-@ApiTags('users')
 @Controller('users')
+@ApiTags('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly i18nService: I18nService,
+  ) {}
 
   @Post()
+  @Public()
   @ApiOperation({ summary: 'Create a new user' })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -37,28 +49,36 @@ export class UsersController {
   })
   async create(
     @Body() createUserDto: CreateUserDto,
-    @I18n() i18n: I18nContext,
-  ) {
-    const user = await this.usersService.create(createUserDto, i18n.lang);
+    @Language() lang: string,
+  ): Promise<BaseApiResponse<User>> {
+    const user = await this.usersService.create(createUserDto);
     return {
       data: user,
-      message: await i18n.translate('modules.users.messages.CREATED'),
+      message: await this.i18nService.translate(
+        'modules.users.messages.CREATED',
+        {
+          lang,
+        },
+      ),
     };
   }
 
   @Get()
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all users' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Return all users',
-    type: [User],
-  })
-  async findAll(@I18n() i18n: I18nContext) {
-    const users = await this.usersService.findAll(i18n.lang);
+  async findAll(
+    @Query() paginationDto: PaginationDto,
+    @Language() lang: string,
+  ): Promise<BaseApiResponse<PaginatedResult<User>>> {
+    const result = await this.usersService.findAll(paginationDto);
     return {
-      data: users,
-      message: await i18n.translate('modules.users.messages.FETCHED_ALL'),
+      data: result,
+      message: await this.i18nService.translate(
+        'modules.users.messages.FETCHED_ALL',
+        {
+          lang,
+        },
+      ),
     };
   }
 
@@ -66,20 +86,19 @@ export class UsersController {
   @ApiBearerAuth()
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get a user by id' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Return the user',
-    type: User,
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'User not found',
-  })
-  async findOne(@Param('id') id: string, @I18n() i18n: I18nContext) {
-    const user = await this.usersService.findOne(id, i18n.lang);
+  async findOne(
+    @Param('id') id: string,
+    @Language() lang: string,
+  ): Promise<BaseApiResponse<User>> {
+    const user = await this.usersService.findOne(id);
     return {
       data: user,
-      message: await i18n.translate('modules.users.messages.FETCHED'),
+      message: await this.i18nService.translate(
+        'modules.users.messages.FETCHED',
+        {
+          lang,
+        },
+      ),
     };
   }
 
@@ -87,20 +106,20 @@ export class UsersController {
   @Roles(Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update a user' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'User has been successfully updated.',
-    type: User,
-  })
   async update(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
-    @I18n() i18n: I18nContext,
-  ) {
-    const user = await this.usersService.update(id, updateUserDto, i18n.lang);
+    @Language() lang: string,
+  ): Promise<BaseApiResponse<User>> {
+    const user = await this.usersService.update(id, updateUserDto);
     return {
       data: user,
-      message: await i18n.translate('modules.users.messages.UPDATED'),
+      message: await this.i18nService.translate(
+        'modules.users.messages.UPDATED',
+        {
+          lang,
+        },
+      ),
     };
   }
 
@@ -108,14 +127,19 @@ export class UsersController {
   @Roles(Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a user' })
-  @ApiResponse({
-    status: HttpStatus.NO_CONTENT,
-    description: 'User has been successfully deleted.',
-  })
-  async remove(@Param('id') id: string, @I18n() i18n: I18nContext) {
-    await this.usersService.remove(id, i18n.lang);
+  async remove(
+    @Param('id') id: string,
+    @Language() lang: string,
+  ): Promise<BaseApiResponse<void>> {
+    await this.usersService.remove(id);
     return {
-      message: await i18n.translate('modules.users.messages.DELETED'),
+      data: null,
+      message: await this.i18nService.translate(
+        'modules.users.messages.DELETED',
+        {
+          lang,
+        },
+      ),
     };
   }
 }
