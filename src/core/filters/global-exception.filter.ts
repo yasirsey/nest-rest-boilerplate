@@ -39,6 +39,21 @@ export class GlobalExceptionFilter implements ExceptionFilter {
           });
           errorCode = 'DUPLICATE_ENTRY';
           break;
+        case 121:
+          status = HttpStatus.BAD_REQUEST;
+          message = await this.i18n.translate('errors.VALIDATION_ERROR', {
+            lang,
+          });
+          errorCode = 'DOCUMENT_VALIDATION_ERROR';
+          details = exception.errmsg;
+          break;
+        case 51:
+          status = HttpStatus.INTERNAL_SERVER_ERROR;
+          message = await this.i18n.translate('errors.FAIL_POINT_ERROR', {
+            lang,
+          });
+          errorCode = 'FAIL_POINT_ERROR';
+          break;
         default:
           status = HttpStatus.INTERNAL_SERVER_ERROR;
           message = await this.i18n.translate('errors.DATABASE_ERROR', {
