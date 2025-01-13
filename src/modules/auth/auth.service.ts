@@ -21,21 +21,15 @@ export class AuthService {
     password: string,
     lang: string,
   ): Promise<any> {
-    try {
-      const user = await this.usersService.findByEmail(email, lang);
-      if (user && (await bcrypt.compare(password, user.password))) {
-        const { ...result } = user.toJSON();
-        return result;
-      }
-      return null;
-    } catch (error) {
-      this.logger.error(
-        `Error validating user: ${error.message}`,
-        error.stack,
-        'AuthService',
-      );
-      return null;
+    const user = await this.usersService.findByEmail(email, lang);
+
+    if (user && (await bcrypt.compare(password, user.password))) {
+      const { ...result } = user.toJSON();
+      return result;
     }
+
+    this.logger.warn(`Failed login attempt for email: ${email}`, 'AuthService');
+    return null;
   }
 
   async login(loginDto: LoginDto, lang: string) {
@@ -44,6 +38,7 @@ export class AuthService {
       loginDto.password,
       lang,
     );
+
     if (!user) {
       throw new UnauthorizedException(
         await this.i18n.translate('modules.auth.messages.INVALID_CREDENTIALS', {
@@ -53,11 +48,18 @@ export class AuthService {
     }
 
     const payload = { email: user.email, sub: user._id, role: user.role };
+    const access_token = this.jwtService.sign(payload);
+
+    this.logger.log(
+      `User logged in successfully: ${user.email}`,
+      'AuthService',
+      { userId: user._id },
+    );
 
     return {
       data: {
         user,
-        access_token: this.jwtService.sign(payload),
+        access_token,
       },
       message: await this.i18n.translate(
         'modules.auth.messages.LOGIN_SUCCESS',

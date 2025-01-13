@@ -1,9 +1,9 @@
 // src/core/core.module.ts
 import { Module, Global } from '@nestjs/common';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
-import { HttpExceptionFilter } from './filters/http-exception.filter';
 import { ResponseInterceptor } from './interceptors/response.interceptor';
 import { LoggerService } from './services/logger.service';
+import { GlobalExceptionFilter } from './filters/global-exception.filter';
 
 @Global()
 @Module({
@@ -11,7 +11,7 @@ import { LoggerService } from './services/logger.service';
     LoggerService,
     {
       provide: APP_FILTER,
-      useClass: HttpExceptionFilter,
+      useClass: GlobalExceptionFilter,
     },
     {
       provide: APP_INTERCEPTOR,
