@@ -1,7 +1,6 @@
 // src/app.module.ts
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
 import { AcceptLanguageResolver, I18nModule } from 'nestjs-i18n';
 import * as path from 'path';
 import { validate } from './config/env.validation';
@@ -15,13 +14,15 @@ import { RequestLoggerInterceptor } from './core/interceptors/request-logger.int
 import { SecurityModule } from './config/security.module';
 import rateLimitConfig from './config/rate-limit.config';
 import corsConfig from './config/cors.config';
+import { databaseConfig } from './config/database.config';
+import { DatabaseModule } from './database/database.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       validate,
-      load: [rateLimitConfig, corsConfig],
+      load: [rateLimitConfig, corsConfig, databaseConfig],
     }),
     SecurityModule,
     I18nModule.forRoot({
@@ -33,7 +34,7 @@ import corsConfig from './config/cors.config';
       },
       resolvers: [AcceptLanguageResolver],
     }),
-    MongooseModule.forRoot(process.env.MONGODB_URI),
+    DatabaseModule.forRoot(),
     CoreModule,
     UsersModule,
     AuthModule,

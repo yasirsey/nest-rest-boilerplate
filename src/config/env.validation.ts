@@ -7,6 +7,7 @@ import {
   IsOptional,
   IsBoolean,
   Matches,
+  ValidateIf,
 } from 'class-validator';
 import { plainToInstance, Transform } from 'class-transformer';
 import { validateSync } from 'class-validator';
@@ -17,13 +18,46 @@ export class EnvironmentVariables {
   PORT: string;
 
   @IsString()
+  @IsEnum(['development', 'production', 'test'])
+  @IsNotEmpty()
+  NODE_ENV: string;
+
+  @IsString()
   @IsNotEmpty()
   MONGODB_URI: string;
 
   @IsString()
-  @IsEnum(['development', 'production', 'test'])
   @IsNotEmpty()
-  NODE_ENV: string;
+  MONGODB_DB_NAME: string;
+
+  @IsOptional()
+  @IsString()
+  MSSQL_ENABLED?: string;
+
+  @ValidateIf((o) => o.MSSQL_ENABLED === 'true')
+  @IsString()
+  @IsNotEmpty()
+  MSSQL_HOST: string;
+
+  @ValidateIf((o) => o.MSSQL_ENABLED === 'true')
+  @IsString()
+  @IsNotEmpty()
+  MSSQL_PORT: string;
+
+  @ValidateIf((o) => o.MSSQL_ENABLED === 'true')
+  @IsString()
+  @IsNotEmpty()
+  MSSQL_USERNAME: string;
+
+  @ValidateIf((o) => o.MSSQL_ENABLED === 'true')
+  @IsString()
+  @IsNotEmpty()
+  MSSQL_PASSWORD: string;
+
+  @ValidateIf((o) => o.MSSQL_ENABLED === 'true')
+  @IsString()
+  @IsNotEmpty()
+  MSSQL_DATABASE: string;
 
   @IsString()
   @IsNotEmpty()

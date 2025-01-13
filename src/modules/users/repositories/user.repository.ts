@@ -10,7 +10,8 @@ import { PaginatedResult } from 'src/core/interfaces/base-api-response.interface
 @Injectable()
 export class UserRepository {
   constructor(
-    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument>,
   ) {}
 
   async create(data: CreateUserDto): Promise<UserDocument> {
