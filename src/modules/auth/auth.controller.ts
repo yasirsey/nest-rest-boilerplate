@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Request,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { I18nService } from 'nestjs-i18n';
@@ -15,6 +16,7 @@ import { Public } from './decorators/public.decorator';
 import { BaseApiResponse } from 'src/core/interfaces/base-api-response.interface';
 import { User } from '../users/schemas/user.schema';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { LoginRateLimitGuard } from './guards/login-rate-limit.guard';
 
 // src/modules/auth/auth.controller.ts
 @Controller('auth')
@@ -27,6 +29,7 @@ export class AuthController {
 
   @Post('login')
   @Public()
+  @UseGuards(LoginRateLimitGuard)
   @HttpCode(HttpStatus.OK)
   async login(
     @Body() loginDto: LoginDto,

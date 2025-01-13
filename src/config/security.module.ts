@@ -18,19 +18,19 @@ import corsConfig from './cors.config';
         const rateLimit = config.get('rateLimit');
         return [
           {
-            name: 'short',
-            ttl: rateLimit.short.ttl,
-            limit: rateLimit.short.limit,
+            name: 'general',
+            ttl: rateLimit.general.ttl,
+            limit: rateLimit.general.limit,
           },
           {
-            name: 'medium',
-            ttl: rateLimit.medium.ttl,
-            limit: rateLimit.medium.limit,
+            name: 'auth-success',
+            ttl: rateLimit.auth.login.success.ttl,
+            limit: rateLimit.auth.login.success.limit,
           },
           {
-            name: 'long',
-            ttl: rateLimit.long.ttl,
-            limit: rateLimit.long.limit,
+            name: 'auth-failure',
+            ttl: rateLimit.auth.login.failure.ttl,
+            limit: rateLimit.auth.login.failure.limit,
           },
         ];
       },
