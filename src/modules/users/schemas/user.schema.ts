@@ -35,6 +35,12 @@ export class User {
   @ApiProperty()
   @Prop({ default: true })
   isActive: boolean;
+
+  @Prop({ type: String, sparse: true })
+  passwordResetToken?: string;
+
+  @Prop({ type: Date })
+  passwordResetExpires?: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -2,6 +2,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as crypto from 'crypto';
+import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
@@ -137,5 +138,38 @@ export class AuthService {
       token: newToken,
       expires,
     });
+  }
+
+  async requestPasswordReset(email: string): Promise<void> {
+    const user = await this.usersService.findByEmail(email);
+    if (!user) {
+      // Silent fail for security
+      return;
+    }
+
+    const resetToken = this.generateSecureToken();
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(resetToken)
+      .digest('hex');
+
+    await this.usersService.updateResetToken(user._id.toString(), {
+      token: hashedToken,
+      expires: new Date(Date.now() + 3600000), // 1 hour
+    });
+
+    // Email sending logic here
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    const user = await this.usersService.findByResetToken(hashedToken);
+    if (!user || user.passwordResetExpires < new Date()) {
+      throw new UnauthorizedException('Invalid or expired reset token');
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await this.usersService.updatePassword(user._id.toString(), hashedPassword);
   }
 }

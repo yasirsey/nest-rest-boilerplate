@@ -71,4 +71,40 @@ export class UserRepository {
   async delete(id: string): Promise<UserDocument | null> {
     return this.userModel.findByIdAndDelete(id).exec();
   }
+
+  async findByResetToken(token: string): Promise<UserDocument | null> {
+    return this.userModel
+      .findOne({
+        passwordResetToken: token,
+        passwordResetExpires: { $gt: new Date() },
+      })
+      .exec();
+  }
+
+  async updateResetToken(
+    userId: string,
+    data: { token: string; expires: Date },
+  ): Promise<void> {
+    await this.userModel
+      .updateOne(
+        { _id: userId },
+        {
+          passwordResetToken: data.token,
+          passwordResetExpires: data.expires,
+        },
+      )
+      .exec();
+  }
+
+  async updatePassword(userId: string, hashedPassword: string): Promise<void> {
+    await this.userModel
+      .updateOne(
+        { _id: userId },
+        {
+          $set: { password: hashedPassword },
+          $unset: { passwordResetToken: 1, passwordResetExpires: 1 },
+        },
+      )
+      .exec();
+  }
 }

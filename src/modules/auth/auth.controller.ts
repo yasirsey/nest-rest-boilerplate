@@ -17,6 +17,10 @@ import { BaseApiResponse } from 'src/core/interfaces/base-api-response.interface
 import { User } from '../users/schemas/user.schema';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { LoginRateLimitGuard } from './guards/login-rate-limit.guard';
+import {
+  RequestPasswordResetDto,
+  ResetPasswordDto,
+} from './dto/password-reset.dto';
 
 // src/modules/auth/auth.controller.ts
 @Controller('auth')
@@ -55,5 +59,23 @@ export class AuthController {
     @Body() { refresh_token }: RefreshTokenDto,
   ): Promise<BaseApiResponse<void>> {
     return this.authService.logout(req.user._id, refresh_token);
+  }
+
+  @Post('password-reset-request')
+  @Public()
+  async requestPasswordReset(@Body() dto: RequestPasswordResetDto) {
+    await this.authService.requestPasswordReset(dto.email);
+    return {
+      message: 'If the email exists, a reset link will be sent',
+    };
+  }
+
+  @Post('password-reset')
+  @Public()
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    await this.authService.resetPassword(dto.token, dto.newPassword);
+    return {
+      message: 'Password successfully reset',
+    };
   }
 }

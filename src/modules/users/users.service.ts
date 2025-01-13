@@ -160,4 +160,31 @@ export class UsersService {
       },
     );
   }
+
+  async findByResetToken(token: string): Promise<UserDocument | null> {
+    return this.userRepository.findByResetToken(token);
+  }
+
+  async updateResetToken(
+    userId: string,
+    data: { token: string; expires: Date },
+  ): Promise<void> {
+    await this.userRepository.updateResetToken(userId, data);
+    this.logger.log(
+      `Password reset token updated for user: ${userId}`,
+      'UsersService',
+    );
+  }
+
+  async updatePassword(userId: string, hashedPassword: string): Promise<void> {
+    await this.userRepository.updatePassword(userId, hashedPassword);
+
+    // Invalidate all refresh tokens when password is changed
+    await this.userRepository.updateOne(
+      { _id: userId },
+      { $set: { refreshTokens: [] } },
+    );
+
+    this.logger.log(`Password updated for user: ${userId}`, 'UsersService');
+  }
 }
