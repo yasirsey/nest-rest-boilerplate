@@ -33,6 +33,10 @@ export class UserRepository {
     return this.userModel.findOne({ email }).exec();
   }
 
+  async findByEmailWithPassword(email: string): Promise<UserDocument | null> {
+    return this.userModel.findOne({ email }).select('+password').exec();
+  }
+
   async updateOne(
     filter: FilterQuery<UserDocument>,
     update: UpdateQuery<UserDocument>,

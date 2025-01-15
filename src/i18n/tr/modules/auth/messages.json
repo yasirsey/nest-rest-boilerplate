@@ -1,5 +1,6 @@
 {
   "LOGIN_SUCCESS": "Giriş başarılı",
+  "REGISTER_SUCCESS": "Kayıt başarılı",
   "LOGOUT_SUCCESS": "Çıkış başarılı",
   "INVALID_CREDENTIALS": "Geçersiz e-posta veya şifre",
   "UNAUTHORIZED": "Bu işlem için yetkiniz yok",

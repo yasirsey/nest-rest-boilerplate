@@ -11,6 +11,8 @@ import { LoggerService } from 'src/core/services/logger.service';
 import { TokenBlacklistService } from './services/token-blacklist.service';
 import { BaseApiResponse } from 'src/core/interfaces/base-api-response.interface';
 import { I18nService } from 'nestjs-i18n';
+import { Role } from './enums/role.enum';
+import { RegisterDto } from './dto/register.dto';
 
 @Injectable()
 export class AuthService {
@@ -30,7 +32,6 @@ export class AuthService {
 
     const tokens = await this.generateTokens(user);
 
-    // Refresh token'ı kullanıcıya kaydet
     await this.updateRefreshToken(user._id.toString(), tokens.refresh_token);
 
     this.logger.log(
@@ -48,16 +49,59 @@ export class AuthService {
     };
   }
 
+  async register(
+    registerDto: RegisterDto,
+  ): Promise<BaseApiResponse<{ user: UserDocument; access_token: string }>> {
+    try {
+      const userDoc = await this.usersService.create({
+        ...registerDto,
+        role: Role.USER,
+      });
+
+      const tokens = await this.generateTokens(userDoc);
+
+      await this.usersService.addRefreshToken(userDoc._id.toString(), {
+        token: tokens.refresh_token,
+        expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+      });
+
+      this.logger.log(
+        `User registered successfully: ${userDoc.email}`,
+        'AuthService',
+        { userId: userDoc._id },
+      );
+
+      const plainUser = userDoc.toObject();
+      delete plainUser.password;
+      delete plainUser.refreshTokens;
+
+      return {
+        data: {
+          user: plainUser,
+          access_token: tokens.access_token,
+        },
+        message: await this.i18n.translate(
+          'modules.auth.messages.REGISTER_SUCCESS',
+        ),
+      };
+    } catch (error) {
+      this.logger.error(
+        `Registration failed for email: ${registerDto.email}`,
+        error.stack,
+        'AuthService',
+      );
+      throw error;
+    }
+  }
+
   async refresh(refreshTokenDto: RefreshTokenDto) {
     const { refresh_token } = refreshTokenDto;
 
-    // Refresh token'ı doğrula
     const user = await this.usersService.findByRefreshToken(refresh_token);
     if (!user) {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    // Refresh token'ın süresini kontrol et
     const isValid = user.refreshTokens.some(
       (t) => t.token === refresh_token && t.expires > new Date(),
     );
@@ -65,10 +109,8 @@ export class AuthService {
       throw new UnauthorizedException('Refresh token expired');
     }
 
-    // Yeni tokenları oluştur
     const tokens = await this.generateTokens(user);
 
-    // Eski refresh token'ı sil ve yenisini kaydet
     await this.rotateRefreshToken(
       user._id.toString(),
       refresh_token,
@@ -135,7 +177,7 @@ export class AuthService {
 
   private async updateRefreshToken(userId: string, refreshToken: string) {
     const expires = new Date();
-    expires.setDate(expires.getDate() + 30); // 30 günlük süre
+    expires.setDate(expires.getDate() + 30); // 30 days
 
     await this.usersService.addRefreshToken(userId, {
       token: refreshToken,

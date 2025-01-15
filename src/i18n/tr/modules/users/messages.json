@@ -1,4 +1,7 @@
 {
+  "EMAIL": {
+    "EXISTS": "Bu e-posta adresi kullanımda"
+  },
   "CREATED": "Kullanıcı başarıyla oluşturuldu",
   "UPDATED": "Kullanıcı bilgileri güncellendi",
   "DELETED": "Kullanıcı silindi"

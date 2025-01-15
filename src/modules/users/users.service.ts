@@ -23,7 +23,7 @@ export class UsersService {
     private readonly i18nService: I18nService,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  async create(createUserDto: CreateUserDto): Promise<UserDocument> {
     const existingUser = await this.userRepository.findByEmail(
       createUserDto.email,
     );
@@ -85,7 +85,7 @@ export class UsersService {
     email: string,
     password: string,
   ): Promise<UserDocument> {
-    const user = await this.userRepository.findByEmail(email);
+    const user = await this.userRepository.findByEmailWithPassword(email);
     if (!user || !(await bcrypt.compare(password, user.password))) {
       throw new UnauthorizedException(
         await this.i18nService.translate(

@@ -9,7 +9,7 @@ import {
   UseGuards,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { I18nService } from 'nestjs-i18n';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -22,8 +22,8 @@ import {
   RequestPasswordResetDto,
   ResetPasswordDto,
 } from './dto/password-reset.dto';
+import { RegisterDto } from './dto/register.dto';
 
-// src/modules/auth/auth.controller.ts
 @Controller('auth')
 @ApiTags('auth')
 export class AuthController {
@@ -40,6 +40,20 @@ export class AuthController {
     @Body() loginDto: LoginDto,
   ): Promise<BaseApiResponse<{ user: User; access_token: string }>> {
     return this.authService.login(loginDto);
+  }
+
+  @Post('register')
+  @Public()
+  @ApiOperation({ summary: 'Register a new user' })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'User has been successfully registered.',
+  })
+  @HttpCode(HttpStatus.CREATED)
+  async register(
+    @Body() registerDto: RegisterDto,
+  ): Promise<BaseApiResponse<{ user: User; access_token: string }>> {
+    return this.authService.register(registerDto);
   }
 
   @Post('refresh')
